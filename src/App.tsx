@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { cn } from './lib/utils.ts'
 
 type TodoType = {
@@ -9,15 +9,15 @@ type TodoType = {
 
 const TodoApp = () => {
   const [todos, setTodos] = useState<TodoType[]>([])
-  const [newTodoText, setNewTodoText] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const addTodo = () => {
-    if (newTodoText.trim()) {
+    if (inputRef.current) {
       setTodos([
         ...todos,
-        { id: Date.now(), text: newTodoText, completed: false },
+        { id: Date.now(), text: inputRef.current.value, completed: false },
       ])
-      setNewTodoText('')
+      inputRef.current.value = ''
     }
   }
 
@@ -40,8 +40,7 @@ const TodoApp = () => {
         <input
           type="text"
           data-testid="todo-input"
-          value={newTodoText}
-          onChange={(e) => setNewTodoText(e.target.value)}
+          ref={inputRef}
           onKeyDown={(e) => e.key === 'Enter' && addTodo()}
           placeholder="Enter a new todo"
           className="mr-4 flex flex-1 rounded-sm border border-gray-500 p-1"
@@ -55,11 +54,16 @@ const TodoApp = () => {
       </div>
       <ul>
         {todos.map((todo) => (
-          <li key={todo.id} className="my-1 flex items-center">
+          <li
+            key={todo.id}
+            className="my-1 flex items-center"
+            data-testid="todo-item"
+          >
             <input
               type="checkbox"
               checked={todo.completed}
               onChange={() => toggleTodo(todo.id)}
+              data-testid="todo-toggle"
             />
             <span
               className={cn([
